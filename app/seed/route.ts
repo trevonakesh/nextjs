@@ -119,14 +119,14 @@
 
 
 import postgres from 'postgres';
+import bcrypt from "bcrypt";
 import { invoices, customers, revenue, users } from '../lib/placeholder-data';
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
 
 async function seedUsers() {
   // Dynamically import bcrypt only when this function is called
-  const bcrypt = await import('bcrypt');
-  
+
   await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
   await sql`
     CREATE TABLE IF NOT EXISTS users (
@@ -139,7 +139,7 @@ async function seedUsers() {
 
   const insertedUsers = await Promise.all(
     users.map(async (user) => {
-      const hashedPassword = await bcrypt.default.hash(user.password, 10);
+      const hashedPassword = await bcrypt.hash(user.password, 10);
       return sql`
         INSERT INTO users (id, name, email, password)
         VALUES (${user.id}, ${user.name}, ${user.email}, ${hashedPassword})
